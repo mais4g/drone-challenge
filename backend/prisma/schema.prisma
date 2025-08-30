@@ -1,0 +1,46 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Pedido {
+  id          String       @id @default(uuid())
+  pesoKg      Float
+  prioridade  String
+  status      String       @default("AGUARDANDO_ALOCACAO")
+  dataCriacao DateTime     @default(now())
+  localizacao Localizacao?
+  rotas       Rota[]
+}
+
+model Localizacao {
+  id       String @id @default(uuid())
+  linha    Int
+  coluna   Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id])
+  pedidoId String @unique
+}
+
+model Drone {
+  id           String @id @default(uuid())
+  modelo       String
+  capacidadeKg Float
+  autonomiaKm  Float
+  status       String @default("OCIOSO")
+  bateria      Int    @default(100) // porcentagem
+  posX         Float  @default(0)
+  posY         Float  @default(0)
+}
+
+model Rota {
+  id        String   @id @default(uuid())
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id])
+  pedidoId  String
+  posX      Int
+  posY      Int
+  timestamp DateTime @default(now())
+}

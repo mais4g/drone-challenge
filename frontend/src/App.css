@@ -1,0 +1,32 @@
+/* frontend/src/App.css */
+
+.app-container {
+  font-family: Arial, sans-serif;
+  padding: 1rem;
+}
+
+header {
+  background: #282c34;
+  color: white;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.main-content {
+  display: flex;
+  gap: 2rem;
+}
+
+.control-panel {
+  flex: 1;
+  background: #f9f9f9;
+  padding: 1rem;
+  border: 1px solid #ddd;
+}
+
+.simulation-panel {
+  flex: 2;
+  background: #fff;
+  padding: 1rem;
+  border: 1px solid #ddd;
+}

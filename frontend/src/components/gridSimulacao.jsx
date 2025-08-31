@@ -1,30 +1,9 @@
-import { useEffect, useState } from "react";
-import api from "../api";
+const GRID_SIZE = 10;
 
-const GRID_SIZE = 10; // mesmo tamanho do grid no backend
-
-export default function GridSimulacao({ pedidoId }) {
-  const [rota, setRota] = useState([]);
-
-  useEffect(() => {
-    if (!pedidoId) return;
-
-    async function fetchRota() {
-      try {
-        const res = await api.get(`/entregas/rota/${pedidoId}`);
-        setRota(res.data);
-      } catch (err) {
-        console.error("Erro ao buscar rota:", err.message);
-      }
-    }
-
-    fetchRota();
-    const interval = setInterval(fetchRota, 1000); // atualiza a cada 1s
-    return () => clearInterval(interval);
-  }, [pedidoId]);
-
-  // Última posição do drone
+export default function GridSimulacao({ pedidoSelecionadoId, rotas }) {
+  const rota = rotas[pedidoSelecionadoId] || [];
   const ultimaPos = rota.length > 0 ? rota[rota.length - 1] : null;
+  const destino = rota.length > 0 ? rota[rota.length - 1] : null;
 
   return (
     <div>
@@ -40,6 +19,15 @@ export default function GridSimulacao({ pedidoId }) {
           Array.from({ length: GRID_SIZE }).map((_, j) => {
             const isDrone =
               ultimaPos && ultimaPos.posX === i && ultimaPos.posY === j;
+            const isPercorrido = rota.some((p) => p.posX === i && p.posY === j);
+            const isDestino =
+              destino && destino.posX === i && destino.posY === j;
+
+            let color = "white";
+            if (isPercorrido) color = "lightblue";
+            if (isDestino) color = "green";
+            if (isDrone) color = "red";
+
             return (
               <div
                 key={`${i}-${j}`}
@@ -47,13 +35,16 @@ export default function GridSimulacao({ pedidoId }) {
                   width: 30,
                   height: 30,
                   border: "1px solid #ccc",
-                  backgroundColor: isDrone ? "red" : "white",
+                  backgroundColor: color,
                 }}
               />
             );
           })
         )}
       </div>
+      <p>
+        🔴 Drone | 🟦 Rota | 🟩 Destino | ⚪ Livre
+      </p>
     </div>
   );
 }

@@ -21,10 +21,13 @@
   "homepage": "https://github.com/mais4g/drone-challenge#readme",
   "dependencies": {
     "@fastify/cors": "^11.1.0",
+    "@fastify/websocket": "^11.2.0",
     "@prisma/client": "^6.15.0",
     "fastify": "^5.5.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "fastify-tsconfig": "^3.0.0",
     "jest": "^30.1.1",
     "nodemon": "^3.1.10",
     "prisma": "^6.15.0",

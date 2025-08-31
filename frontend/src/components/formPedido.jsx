@@ -13,15 +13,15 @@ export default function FormPedido() {
       await api.post("/pedidos", {
         pesoKg: parseFloat(pesoKg),
         localizacao: { linha: parseInt(linha), coluna: parseInt(coluna) },
-        prioridade
+        prioridade,
       });
-      alert("Pedido criado com sucesso!");
+      alert("✅ Pedido criado com sucesso!");
       setPesoKg("");
       setLinha("");
       setColuna("");
       setPrioridade("MEDIA");
     } catch (err) {
-      alert("Erro ao criar pedido: " + err.message);
+      alert("❌ Erro ao criar pedido: " + err.message);
     }
   }
 
@@ -49,7 +49,10 @@ export default function FormPedido() {
         onChange={(e) => setColuna(e.target.value)}
         required
       />
-      <select value={prioridade} onChange={(e) => setPrioridade(e.target.value)}>
+      <select
+        value={prioridade}
+        onChange={(e) => setPrioridade(e.target.value)}
+      >
         <option value="BAIXA">Baixa</option>
         <option value="MEDIA">Média</option>
         <option value="ALTA">Alta</option>

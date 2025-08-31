@@ -1,4 +1,6 @@
 const fastify = require("fastify")({ logger: true });
+const websocket = require("@fastify/websocket");
+
 //const cors = require("@fastify/cors");
 
 /*
@@ -17,6 +19,16 @@ fastify.register(pedidoRoutes, { prefix: "/api" });
 fastify.register(droneRoutes, { prefix: "/api" });
 fastify.register(alocacaoRoutes, { prefix: "/api" });
 fastify.register(entregaRoutes, { prefix: '/api' });
+fastify.register(websocket);
+
+fastify.register(async function (fastify) {
+    fastify.get('/api/updates', { websocket: true }, (connection, req) => {
+        broadcastService.addClient(connection.socket);
+        connection.socket.on('close', () => {
+            broadcastService.removeClient(connection.socket);
+        });
+    });
+});
 
 const start = async () => {
   try {

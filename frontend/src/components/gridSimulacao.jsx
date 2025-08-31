@@ -1,50 +1,73 @@
-const GRID_SIZE = 10;
+import React from "react";
+import cidade from "../../../backend/src/data/cidade.js";
 
-export default function GridSimulacao({ pedidoSelecionadoId, rotas }) {
+export default function GridSimulacao({ 
+  drones, 
+  pedidoSelecionadoId, 
+  rotas, 
+  pedidos 
+}) {
+  const GRID_SIZE = 10;
   const rota = rotas[pedidoSelecionadoId] || [];
-  const ultimaPos = rota.length > 0 ? rota[rota.length - 1] : null;
   const destino = rota.length > 0 ? rota[rota.length - 1] : null;
 
+  const pedidoSelecionado = pedidos.find((p) => p.id === pedidoSelecionadoId);
+  const isRotaHistorica = pedidoSelecionado?.status === "ENTREGUE";
+
+  const droneDaEntrega = drones.find(
+    (d) => d.pedidoAtualId === pedidoSelecionadoId
+  );
+
   return (
-    <div>
-      <h2>Simulação da Entrega</h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${GRID_SIZE}, 30px)`,
-          gap: "2px",
-        }}
-      >
-        {Array.from({ length: GRID_SIZE }).map((_, i) =>
-          Array.from({ length: GRID_SIZE }).map((_, j) => {
+    <div className="card">
+      <div className="simulacao-header">
+        <h2>
+          {isRotaHistorica ? "Rota Histórica" : "Simulação da Entrega"}
+        </h2>
+        {pedidoSelecionado && (
+          <span className={`status-indicator status-${pedidoSelecionado.status.toLowerCase()}`}>
+            {pedidoSelecionado.status}
+          </span>
+        )}
+      </div>
+      
+      <div className="grid-simulacao">
+        {Array.from({ length: GRID_SIZE }).map((_, linha) =>
+          Array.from({ length: GRID_SIZE }).map((_, coluna) => {
             const isDrone =
-              ultimaPos && ultimaPos.posX === i && ultimaPos.posY === j;
-            const isPercorrido = rota.some((p) => p.posX === i && p.posY === j);
-            const isDestino =
-              destino && destino.posX === i && destino.posY === j;
+              !isRotaHistorica &&
+              droneDaEntrega &&
+              droneDaEntrega.posX === linha &&
+              droneDaEntrega.posY === coluna;
 
-            let color = "white";
-            if (isPercorrido) color = "lightblue";
-            if (isDestino) color = "green";
-            if (isDrone) color = "red";
-
-            return (
-              <div
-                key={`${i}-${j}`}
-                style={{
-                  width: 30,
-                  height: 30,
-                  border: "1px solid #ccc",
-                  backgroundColor: color,
-                }}
-              />
+            const isRota = rota.some(
+              (p) => p.linha === linha && p.coluna === coluna
             );
+            const isDestino =
+              destino &&
+              destino.linha === linha &&
+              destino.coluna === coluna;
+
+            const isObstaculo = cidade[linha][coluna] === 1;
+
+            let cellClass = "grid-cell vazio";
+            if (isObstaculo) cellClass = "grid-cell obstaculo";
+            if (isRota) cellClass = `grid-cell ${isRotaHistorica ? "rota-historica" : "rota"}`;
+            if (isDestino) cellClass = "grid-cell destino";
+            if (isDrone) cellClass = "grid-cell drone";
+
+            return <div key={`${linha}-${coluna}`} className={cellClass} />;
           })
         )}
       </div>
-      <p>
-        🔴 Drone | 🟦 Rota | 🟩 Destino | ⚪ Livre
-      </p>
+      
+      <div className="legenda">
+        <span>🔴 Drone</span>
+        <span>🟦 Rota {isRotaHistorica ? "Histórica" : "Atual"}</span>
+        <span>🟩 Destino</span>
+        <span>⚫ Obstáculo</span>
+        <span>⚪ Livre</span>
+      </div>
     </div>
   );
 }

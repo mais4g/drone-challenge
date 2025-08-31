@@ -1,15 +1,35 @@
+import React from "react";
+
 export default function DroneList({ drones }) {
   return (
-    <div>
-      <h2>Drones</h2>
-      <ul>
-        {drones.map((d) => (
-          <li key={d.id}>
-            {d.modelo} - <b>{d.status}</b> - Bateria: {d.bateria}% - Posição: (
-            {d.posX}, {d.posY})
-          </li>
-        ))}
-      </ul>
+    <div className="card">
+      <h2>Lista de Drones</h2>
+      <div className="list-container">
+        {drones.length === 0 ? (
+          <p className="empty-text">Nenhum drone cadastrado.</p>
+        ) : (
+          drones.map((drone) => (
+            <div key={drone.id} className="list-item">
+              <div>
+                <strong>🚁 {drone.modelo}</strong>
+                <p>Posição: [{drone.posX}, {drone.posY}]</p>
+                <p>
+                  Pedido atual:{" "}
+                  {drone.pedidoAtualId ? `#${drone.pedidoAtualId}` : "Nenhum"}
+                </p>
+                <p>Bateria: {drone.bateria}%</p>
+              </div>
+              <span
+                className={`status-tag ${
+                  drone.status === "OCIOSO" ? "available" : "busy"
+                }`}
+              >
+                {drone.status}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

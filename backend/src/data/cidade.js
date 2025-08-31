@@ -1,5 +1,5 @@
 // 0 = livre, 1 = obstáculo
-const grid = [
+const cidade = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
   [0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
@@ -12,4 +12,4 @@ const grid = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
-module.exports = { grid };
+export default cidade;

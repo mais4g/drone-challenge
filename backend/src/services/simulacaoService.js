@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { bfs } = require('./rotaService');
-const { grid } = require('../data/cidade'); 
+const { cidade } = require('../data/cidade'); 
 const broadcastService = require('./broadcastService');
 
 function esperar(ms) {
@@ -10,9 +10,8 @@ function esperar(ms) {
 
 
 /**
- * Atualiza o status/dados de um drone no banco e notifica os clientes via WebSocket.
  * @param {string} droneId - O ID do drone a ser atualizado.
- * @param {object} data - Os novos dados para o drone (ex: { status: 'EM_VOO', bateria: 99 }).
+ * @param {object} data - Os novos dados para o drone.
  */
 async function atualizarDroneEBroadcast(droneId, data) {
   const droneAtualizado = await prisma.drone.update({
@@ -24,7 +23,6 @@ async function atualizarDroneEBroadcast(droneId, data) {
 }
 
 /**
- * Atualiza o status de um pedido no banco e notifica os clientes via WebSocket.
  * @param {string} pedidoId - O ID do pedido a ser atualizado.
  * @param {string} status - O novo status do pedido.
  */
@@ -41,7 +39,7 @@ async function simularEntrega(pedido, drone) {
   const start = [drone.posX, drone.posY];
   const end = [pedido.localizacao.linha, pedido.localizacao.coluna];
 
-  const caminho = bfs(grid, start, end);
+  const caminho = bfs(cidade, start, end);
 
   if (!caminho) {
     console.log(`❌ Drone ${drone.modelo} não encontrou rota para pedido ${pedido.id}`);

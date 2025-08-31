@@ -1,76 +1,58 @@
-/**
 const fastify = require("fastify")({ logger: true });
 const websocket = require("@fastify/websocket");
-const broadcastService = require("./services/broadcastService");
+const cors = require("@fastify/cors");
 
-fastify.register(websocket);
+const broadcastService = require("./services/broadcastService.js");
+const pedidoRoutes = require("./routes/pedidoRoutes.js");
+const droneRoutes = require("./routes/droneRoutes.js");
+const alocacaoRoutes = require("./routes/alocacaoRoutes.js");
+const entregaRoutes = require('./routes/entregaRoutes.js');
 
-fastify.get("/api/test-broadcast", async (req, reply) => {
-  broadcastService.broadcast({ type: "TEST", payload: { msg: "Hello WebSocket!" } });
-  return { ok: true };
-});
+async function build() {
+  const app = fastify;
 
-// Rota WebSocket
-fastify.get("/api/updates", { websocket: true }, (connection, req) => {
-  const ws = connection.socket; // ✅ WebSocket real
-
-  broadcastService.addClient(ws);
-
-  ws.on("close", () => {
-    broadcastService.removeClient(ws);
+  await app.register(cors, {
+    origin: "http://localhost:5173",
   });
-});
 
-// Rotas REST
-const pedidoRoutes = require("./routes/pedidoRoutes");
-const droneRoutes = require("./routes/droneRoutes");
-const alocacaoRoutes = require("./routes/alocacaoRoutes");
-const entregaRoutes = require("./routes/entregaRoutes");
+  await app.register(websocket);
 
-fastify.register(pedidoRoutes, { prefix: "/api" });
-fastify.register(droneRoutes, { prefix: "/api" });
-fastify.register(alocacaoRoutes, { prefix: "/api" });
-fastify.register(entregaRoutes, { prefix: "/api" });
+  app.register(async (instance) => {
+    instance.register(pedidoRoutes, { prefix: "/api" });
+    instance.register(droneRoutes, { prefix: "/api" });
+    instance.register(alocacaoRoutes, { prefix: "/api" });
+    instance.register(entregaRoutes, { prefix: '/api' });
+
+    instance.get('/api/updates', { websocket: true }, (connection, req) => {
+      try {
+        instance.log.info('Cliente WebSocket conectado.');
+        broadcastService.addClient(connection.socket);
+
+        connection.socket.on('close', () => {
+          instance.log.info('Cliente WebSocket desconectado.');
+          broadcastService.removeClient(connection.socket);
+        });
+
+        connection.socket.on('error', (error) => {
+          instance.log.error({ err: error }, 'Erro no WebSocket:');
+        });
+
+      } catch (error) {
+        instance.log.error({ err: error }, 'Erro fatal no handler da conexão WebSocket');
+        connection.socket.close();
+      }
+    });
+  });
+
+  return app;
+}
 
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000, host: "0.0.0.0" });
-    fastify.log.info("🚀 Servidor rodando em http://localhost:3000");
+    const app = await build();
+    await app.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-};
-
-start();
-**/
-
-const fastify = require("fastify")({ logger: true });
-const websocket = require("@fastify/websocket");
-
-fastify.register(websocket);
-
-fastify.get("/api/updates", { websocket: true }, (connection, req) => {
-  const ws = connection.socket; // WebSocket real
-
-  ws.send("Conexão estabelecida com sucesso!");
-
-  ws.on("message", (msg) => {
-    fastify.log.info(`📩 Mensagem recebida: ${msg}`);
-    ws.send(`ECO: ${msg}`);
-  });
-
-  ws.on("close", () => {
-    fastify.log.info("🔌 Cliente desconectado");
-  });
-});
-
-const start = async () => {
-  try {
-    await fastify.listen({ port: 3000, host: "0.0.0.0" });
-    fastify.log.info("🚀 Servidor rodando em http://localhost:3000");
-  } catch (err) {
-    fastify.log.error(err);
+    console.error(err);
     process.exit(1);
   }
 };
